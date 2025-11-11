@@ -1,0 +1,29 @@
+{
+  "name": "tailor-api",
+  "version": "1.0.0",
+  "description": "tailor app backend api",
+  "license": "ISC",
+  "author": "faisaltechz",
+  "type": "module",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch server.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.3",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/morgan": "^1.9.10",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.6"
+  }
+}
