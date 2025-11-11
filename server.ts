@@ -15,8 +15,12 @@ app.use("/",router);
 
 const node_env= config.NODE_ENV
 
+
 if(node_env=="development"){
     app.listen(config.PORT,config.HOST,()=>{
         console.log(`server is running on http://${config.HOST}:${config.PORT}`);
     })
 }
+
+
+export default app;
