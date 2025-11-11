@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import config from "../config/environment"
+import config from "../config/environment.js"
 let isConnected = false; // Track connection state
 
 export const dbConnected = async (): Promise<void> => {

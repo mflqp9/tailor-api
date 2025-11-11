@@ -1,9 +1,9 @@
 import express,{Express} from "express";
 import morgan from "morgan";
 import cors from "cors";
-import config from "./config/environment"
-import { dbConnected } from "./config/database";
-import router from "./routes/routes";
+import config from "./config/environment.js"
+import { dbConnected } from "./config/database.js";
+import router from "./routes/routes.js";
 const app:Express = express();
 
 app.use(express.json());
