@@ -4,6 +4,7 @@ import cors from "cors";
 import config from "./config/environment.js"
 import { dbConnected } from "./config/database.js";
 import router from "./routes/routes.js";
+import serverless from "serverless-http";
 const app:Express = express();
 
 app.use(express.json());
@@ -23,4 +24,4 @@ if(node_env=="development"){
 }
 
 
-export default app;
+export default serverless(app);
