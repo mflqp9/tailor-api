@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "tailor-api",
   "version": "1.0.0",
   "description": "tailor backend api app",
@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch server.ts",
     "build": "tsc",
-    "start":"node dist/server.js"
+    "start": "node dist/server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -19,7 +19,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
-    "morgan": "^1.10.1"
+    "morgan": "^1.10.1",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

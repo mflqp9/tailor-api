@@ -11,9 +11,9 @@ app.use(cors());
 dbConnected(); //Connect to your mongodb database if !node_env="development"
 app.use("/", router);
 const node_env = config.NODE_ENV;
-export default app;
 if (node_env == "development") {
     app.listen(config.PORT, config.HOST, () => {
         console.log(`server is running on http://${config.HOST}:${config.PORT}`);
     });
 }
+export default app;
