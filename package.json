@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "tailor-api",
   "version": "1.0.0",
   "description": "tailor backend api app",
@@ -8,9 +8,9 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch server.ts",
+    "dev": "nodemon server.js",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

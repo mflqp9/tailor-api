@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import config from "../config/environment.js"
+import config from "./environment.js";
 let isConnected = false; // Track connection state
 
-export const dbConnected = async (): Promise<void> => {
+export const dbConnected = async () => {
   if (isConnected) {
     console.log("⚡ MongoDB already connected.");
     return;
