@@ -24,4 +24,4 @@ if(node_env=="development"){
 }
 
 
-export default serverless(app);
+export default app;

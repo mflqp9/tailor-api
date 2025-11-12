@@ -4,7 +4,6 @@ import cors from "cors";
 import config from "./config/environment.js";
 import { dbConnected } from "./config/database.js";
 import router from "./routes/routes.js";
-import serverless from "serverless-http";
 const app = express();
 app.use(express.json());
 app.use(morgan("combined"));
@@ -17,4 +16,4 @@ if (node_env == "development") {
         console.log(`server is running on http://${config.HOST}:${config.PORT}`);
     });
 }
-export default serverless(app);
+export default app;
