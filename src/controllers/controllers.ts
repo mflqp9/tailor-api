@@ -50,6 +50,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
         },
         error: null,
       });
+      return;
     } else {
       // if user exists and then check profile
 
@@ -64,6 +65,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
           error:
             "Email already registered without profile. Please contact support.",
         });
+        return;
       } else {
         if (existsProfile.isVerified) {
           res.status(StatusCodes.CONFLICT).json({
@@ -72,6 +74,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
             data: null,
             error: "Email already registered and verified. Please login.",
           });
+          return;
         } else {
           const otp = generateOtp(); //generate otp for email verification
           res.status(StatusCodes.OK).json({
@@ -86,6 +89,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
             },
             error: null,
           });
+          return;
         }
       }
     }
@@ -147,7 +151,7 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user._id },config.JWT.secret, {
+    const token = jwt.sign({ id: user._id }, config.JWT.secret, {
       expiresIn: "1d",
     });
 
@@ -163,8 +167,6 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
       },
       error: null,
     });
-
-    console.log("✅ Login Successfully");
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -175,7 +177,6 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
-
 
 let postSignOut = (req: Request, res: Response): void => {
   // JWT logout handled client-side by deleting token
@@ -206,6 +207,7 @@ let postUserVerified = async (req: Request, res: Response): Promise<void> => {
         },
         error: null,
       });
+      return;
     } else {
       res.status(400).json({
         message: "Authentication failed",
@@ -229,5 +231,4 @@ let dashboard = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-
-export { postSignUp,postSignIn,postSignOut,postUserVerified, dashboard };
+export { postSignUp, postSignIn, postSignOut, postUserVerified, dashboard };
