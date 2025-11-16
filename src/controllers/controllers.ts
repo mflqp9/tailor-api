@@ -12,87 +12,85 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password }: ILogin = req.body;
 
+    // STEP 1 — Check if profile exists
+    const existsProfile = await ProfileModel.findOne({ email });
+
+    // STEP 2 — Check if user exists
     const existsUser = await UserModel.findOne({ email });
 
-    if (!existsUser) {
-      //if user not exists
-
-      //New User and Profile Creation
-      const newProfile = new ProfileModel({
-        email,
+    // Case 1 — Profile exists AND already verified → user is fully registered
+    if (existsProfile && existsProfile.isVerified) {
+       res.status(StatusCodes.CONFLICT).json({
+        succeed: false,
+        message: "Registration failed.",
+        data: null,
+        error: "Email already registered and verified. Please login.",
       });
-      await newProfile.save();
+      return;
+    }
 
-      const profileId = newProfile._id.toString();
-
-      const salt = config.BCRYPTJS_ROUNDS;
-      const hashPassword = await bcrypt.hash(password, salt);
-
-      const newUser = new UserModel({
-        branchId: profileId,
-        email,
-        password: hashPassword,
-        role: "admin",
-        isActive: true,
+    // Case 2 — User exists but profile is missing → inconsistent state
+    if (existsUser && !existsProfile) {
+       res.status(StatusCodes.CONFLICT).json({
+        succeed: false,
+        message: "Registration failed.",
+        data: null,
+        error:
+          "Email already registered without profile. Please contact support.",
       });
-      await newUser.save();
-      const otp = generateOtp(); //generate otp for email verification
+      return;
+    }
 
-      res.status(StatusCodes.CREATED).json({
+    // Case 3 — Profile exists but not verified → resend OTP
+    if (existsProfile && !existsProfile.isVerified) {
+      const otp = generateOtp();
+       res.status(StatusCodes.OK).json({
         succeed: true,
-        message: "User profile created successfully",
+        message: "OTP sent for email verification.",
         data: {
           otp,
-          id: newUser._id,
-          email: newUser.email,
-          role: newUser.role,
-          branchId: newUser.branchId,
+          id: existsProfile._id,
+          email: existsProfile.email,
+          role: existsUser?.role || "admin",
+          branchId: existsUser?.branchId || existsProfile._id,
         },
         error: null,
       });
       return;
-    } else {
-      // if user exists and then check profile
-
-      const existsProfile = await ProfileModel.findOne({ email });
-
-      if (!existsProfile) {
-        //if profile not exists, create profile
-        res.status(StatusCodes.CONFLICT).json({
-          succeed: false,
-          message: "Registration failed.",
-          data: null,
-          error:
-            "Email already registered without profile. Please contact support.",
-        });
-        return;
-      } else {
-        if (existsProfile.isVerified) {
-          res.status(StatusCodes.CONFLICT).json({
-            succeed: false,
-            message: "Registration failed.",
-            data: null,
-            error: "Email already registered and verified. Please login.",
-          });
-          return;
-        } else {
-          const otp = generateOtp(); //generate otp for email verification
-          res.status(StatusCodes.OK).json({
-            succeed: true,
-            message: "OTP sent for email verification.",
-            data: {
-              otp,
-              id: existsProfile._id,
-              email: existsProfile.email,
-              role: existsUser.role,
-              branchId: existsUser.branchId,
-            },
-            error: null,
-          });
-          return;
-        }
-      }
     }
+
+    // Case 4 — Completely new user → create Profile + User
+    const newProfile = new ProfileModel({ email });
+    await newProfile.save();
+
+    const salt = config.BCRYPTJS_ROUNDS;
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new UserModel({
+      branchId: newProfile._id.toString(),
+      email,
+      password: hashPassword,
+      role: "admin",
+      isActive: true,
+    });
+
+    await newUser.save();
+
+    const otp = generateOtp();
+
+    res.status(StatusCodes.CREATED).json({
+      succeed: true,
+      message: "User profile created successfully",
+      data: {
+        otp,
+        id: newUser._id,
+        email: newUser.email,
+        role: newUser.role,
+        branchId: newUser.branchId,
+      },
+      error: null,
+    });
+
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       succeed: false,
@@ -102,6 +100,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
     });
   }
 };
+
 
 let postSignIn = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -122,6 +121,7 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
 
     if (!user.isActive) {
       res.status(400).json({
+        succeed: false,
         message: "Authentication failed.",
         data: null,
         error: "User not active",
@@ -133,6 +133,7 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       res.status(400).json({
+        succeed: false,
         message: "Authentication failed.",
         data: null,
         error: "Invalid credentials",
@@ -143,6 +144,7 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
     // Check expiry
     if (new Date(user.expiry) < new Date()) {
       res.status(403).json({
+        succeed: false,
         message: "Authentication failed.",
         data: null,
         error: "Account deactivated, contact support...",

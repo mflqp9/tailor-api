@@ -3,6 +3,7 @@ import express,{Express} from "express";
 import cors from "cors";
 import morgan from "morgan";
 import apiRoutes from "./routes/routes.js";
+import { config } from "./config/env.js";
 // dotenv.config();
 
 const app:Express = express();
@@ -20,8 +21,9 @@ dbConnect().catch((error) => {
 });
 
 // Export the Express app for Vercel serverless functions
+if (config.NODE_ENV !== "production") {
+  app.listen( config.PORT,config.HOST, () => {
+    console.log(`🚀 Server is running on http://${config.HOST}:${config.PORT}`);
+  });
+}
 export default app;
-
-// app.listen( config.PORT,config.HOST, () => {
-//   console.log(`🚀 Server is running on http://${config.HOST}:${config.PORT}`);
-// });
