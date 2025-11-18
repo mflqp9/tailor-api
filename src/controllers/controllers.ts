@@ -4,7 +4,7 @@ import { ILogin } from "../types/types.js";
 import { StatusCodes } from "http-status-codes";
 import UserModel from "../models/user.js";
 import { config } from "../config/env.js";
-import bcrypt from "bcryptjs";
+import bcrypt, { genSaltSync } from "bcryptjs";
 import { generateOtp } from "../utils/generateOtp.js";
 import jwt from "jsonwebtoken";
 
@@ -63,7 +63,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
     const newProfile = new ProfileModel({ email });
     await newProfile.save();
 
-    const salt = config.BCRYPTJS_ROUNDS;
+    const salt =  genSaltSync(config.BCRYPTJS_ROUNDS);
     const hashPassword = await bcrypt.hash(password, salt);
 
     const newUser = new UserModel({
