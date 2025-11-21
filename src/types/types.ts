@@ -45,4 +45,5 @@ interface ResponseOptions {
   data?: any;
   error?: any;
 }
-export type {IProfile, IUser, IAuthResponse, ILogin, ResponseOptions, };
+
+export type {IProfile, IUser, IAuthResponse, ILogin, ResponseOptions };

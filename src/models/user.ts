@@ -20,12 +20,10 @@ const UserSchema:Schema<IUser> = new Schema<IUser>(
       type: String,
       required: true,
         enum: ["superAdmin","admin", "user"],
-
   },
     branchId: {
         type: String,
         required: true,
-        unique: true ,
         // format: /^[A-Z0-9]{6}$/,
     },
   isActive: {

@@ -7,20 +7,31 @@ import { config } from "../config/env.js";
 import bcrypt, { genSaltSync } from "bcryptjs";
 import { generateOtp } from "../utils/generateOtp.js";
 import jwt from "jsonwebtoken";
-
-let postSignUp = async (req: Request, res: Response): Promise<void> => {
+//Post SignUp (verified)
+ const postSignUp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password }: ILogin = req.body;
 
-    // STEP 1 — Check if profile exists
-    const existsProfile = await ProfileModel.findOne({ email });
+    // Step 0 — Validate incoming body
+    if (!email || !password) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        succeed: false,
+        message: "Invalid request.",
+        data: null,
+        error: "Email and password are required.",
+      });
+      return;
+    }
 
-    // STEP 2 — Check if user exists
-    const existsUser = await UserModel.findOne({ email });
+    // Step 1 — Fetch profile + user in parallel (faster)
+    const [existsProfile, existsUser] = await Promise.all([
+      ProfileModel.findOne({ email }),
+      UserModel.findOne({ email }),
+    ]);
 
-    // Case 1 — Profile exists AND already verified → user is fully registered
+    // Case 1 — Profile exists AND verified
     if (existsProfile && existsProfile.isVerified) {
-       res.status(StatusCodes.CONFLICT).json({
+      res.status(StatusCodes.CONFLICT).json({
         succeed: false,
         message: "Registration failed.",
         data: null,
@@ -29,14 +40,13 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Case 2 — User exists but profile is missing → inconsistent state
+    // Case 2 — User exists but profile is missing (corrupted state)
     if (existsUser && !existsProfile) {
-       res.status(StatusCodes.CONFLICT).json({
+      res.status(StatusCodes.CONFLICT).json({
         succeed: false,
         message: "Registration failed.",
         data: null,
-        error:
-          "Email already registered without profile. Please contact support.",
+        error: "Email already registered without profile. Contact support.",
       });
       return;
     }
@@ -44,14 +54,15 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
     // Case 3 — Profile exists but not verified → resend OTP
     if (existsProfile && !existsProfile.isVerified) {
       const otp = generateOtp();
-       res.status(StatusCodes.OK).json({
+
+      res.status(StatusCodes.OK).json({
         succeed: true,
         message: "OTP sent for email verification.",
         data: {
           otp,
           id: existsProfile._id,
           email: existsProfile.email,
-          role: existsUser?.role || "admin",
+          role: existsUser?.role || "user",
           branchId: existsUser?.branchId || existsProfile._id,
         },
         error: null,
@@ -59,13 +70,15 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Case 4 — Completely new user → create Profile + User
+    // Case 4 — New user → Create Profile + User
     const newProfile = new ProfileModel({ email });
     await newProfile.save();
 
-    const salt =  genSaltSync(config.BCRYPTJS_ROUNDS);
+    // Hash password
+    const salt = await bcrypt.genSalt(config.BCRYPTJS_ROUNDS);
     const hashPassword = await bcrypt.hash(password, salt);
 
+    // Create user
     const newUser = new UserModel({
       branchId: newProfile._id.toString(),
       email,
@@ -80,7 +93,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
 
     res.status(StatusCodes.CREATED).json({
       succeed: true,
-      message: "User profile created successfully",
+      message: "User profile created successfully.",
       data: {
         otp,
         id: newUser._id,
@@ -90,6 +103,7 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
       },
       error: null,
     });
+    return;
 
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -101,38 +115,48 @@ let postSignUp = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-
-let postSignIn = async (req: Request, res: Response): Promise<void> => {
+//Post SignIn (verified)
+ const postSignIn = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password }: ILogin = req.body;
+    const { email, password } = req.body;
 
-    // Find user by email
+    // Validate input
+    if (!email || !password) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        succeed: false,
+        message: "Invalid request.",
+        data: null,
+        error: "Email & password required",
+      });
+      return;
+    }
+
+    // Find user
     const user = await UserModel.findOne({ email });
-
     if (!user) {
-      res.status(400).json({
+      res.status(StatusCodes.BAD_REQUEST).json({
         succeed: false,
         message: "Authentication failed.",
         data: null,
-        error: "User not found.",
+        error: "User not found",
       });
       return;
     }
 
     if (!user.isActive) {
-      res.status(400).json({
+      res.status(StatusCodes.UNAUTHORIZED).json({
         succeed: false,
         message: "Authentication failed.",
         data: null,
-        error: "User not active",
+        error: "User is inactive",
       });
       return;
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      res.status(400).json({
+    // Password check
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      res.status(StatusCodes.BAD_REQUEST).json({
         succeed: false,
         message: "Authentication failed.",
         data: null,
@@ -141,48 +165,52 @@ let postSignIn = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Check expiry
+    // Expiry check
     if (new Date(user.expiry) < new Date()) {
-      res.status(403).json({
+      res.status(StatusCodes.FORBIDDEN).json({
         succeed: false,
         message: "Authentication failed.",
         data: null,
-        error: "Account deactivated, contact support...",
+        error: "Account expired, contact support",
       });
       return;
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, config.JWT.secret, {
-      expiresIn: "1d",
-    });
+    // Create JWT
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role },
+      config.JWT.secret,
+      { expiresIn: "1d" }
+    );
 
-    res.status(201).json({
-      message: "Login Successfully",
+    res.status(StatusCodes.OK).json({
+      succeed: true,
+      message: "Login successful",
       data: {
         token,
         id: user._id,
-        branchId: user.branchId,
         email: user.email,
         role: user.role,
+        branchId: user.branchId,
         expiry: user.expiry,
       },
       error: null,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
+    console.error("SignIn Error:", err);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       succeed: false,
       message: "Authentication failed.",
       data: null,
-      error: `catch error: ${err}`,
+      error: err instanceof Error ? err.message : "Unknown error",
     });
   }
 };
 
+// SignOut (verified)
 let postSignOut = (req: Request, res: Response): void => {
   // JWT logout handled client-side by deleting token
-  res.json({
+  res.status(StatusCodes.ACCEPTED).json({
     succeed: true,
     message: "Logout successful. Delete token on client.",
     data: null,
@@ -190,47 +218,54 @@ let postSignOut = (req: Request, res: Response): void => {
   });
 };
 
-//Verified Controller
-let postUserVerified = async (req: Request, res: Response): Promise<void> => {
+//Verified Controller (verified)
+let postUserVerified = async (req: Request, res: Response) => {
   try {
-    const { email }: { email: string } = req.body;
-    if (email) {
-      const doc = await ProfileModel.findOneAndUpdate(
-        { email },
-        { isVerified: true },
-        { new: true }
-      );
-      res.status(200).json({
-        succeed: true,
-        message: "User successfully verified.",
-        data: {
-          email: doc?.email,
-          isVerified: doc?.isVerified,
-        },
-        error: null,
-      });
-      return;
-    } else {
-      res.status(400).json({
+    const { email } = req.body;
+
+    // Validate email
+    if (!email || typeof email !== "string" || email.trim() === "") {
+      return res.status(400).json({
+        succeed: false,
         message: "Authentication failed",
         data: null,
-        error: "Email not found",
+        error: "A valid email is required",
       });
     }
-  } catch (err) {
-    res.status(500).json({
+
+    // Check if user profile exists
+    const profile = await ProfileModel.findOne({ email });
+
+    if (!profile) {
+      return res.status(404).json({
+        succeed: false,
+        message: "Authentication failed",
+        data: null,
+        error: "User profile not found",
+      });
+    }
+
+    // Verify user now
+    profile.isVerified = true;
+    await profile.save();
+
+    return res.status(200).json({
+      succeed: true,
+      message: "User successfully verified.",
+      data: {
+        email: profile.email,
+        isVerified: true,
+      },
+      error: null,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
       succeed: false,
       message: "Authentication failed",
       data: null,
-      error: `catch error: ${err}`,
+      error: error.message || "Internal server error",
     });
   }
 };
 
-let dashboard = async (req: Request, res: Response): Promise<void> => {
-  res.status(200).json({
-    message: "Welcome to the tailor API dashboard!",
-  });
-};
-
-export { postSignUp, postSignIn, postSignOut, postUserVerified, dashboard };
+export { postSignUp, postSignIn, postSignOut, postUserVerified };

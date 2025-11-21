@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import type { IProfile } from "../types/types.js";
 
-const ProfileSchema:Schema<IProfile> = new Schema<IProfile>(
+const ProfileSchema: Schema<IProfile> = new Schema<IProfile>(
   {
     email: {
       type: String,
@@ -17,45 +17,47 @@ const ProfileSchema:Schema<IProfile> = new Schema<IProfile>(
       lowercase: true,
       maxlength: 100,
       default: "default name",
-  },
-  phone: {
+    },
+    phone: {
       type: String,
       required: true,
       maxlength: 15,
       default: "0000000000",
-  },
-  address: {
+    },
+    address: {
       type: String,
       required: true,
       maxlength: 200,
       default: "default address",
-  },
-  city: {
+    },
+    city: {
       type: String,
       required: true,
       maxlength: 100,
       default: "default city",
-  },
-  isVerified: {
+    },
+    isVerified: {
       type: Boolean,
       default: false,
-  },
-  isActive: {
+    },
+    isActive: {
       type: Boolean,
       default: true,
-  },
-  createdAt: {
+    },
+    createdAt: {
       type: Date,
       default: Date.now,
-  },
-  updatedAt: {
+    },
+    updatedAt: {
       type: Date,
       default: Date.now,
+    },
   },
-},
-  { collection: "profiles",versionKey: false },
+  { collection: "profiles", versionKey: false }
 );
 
-const ProfileModel = mongoose.models.IProfile || mongoose.model<IProfile>("profiles", ProfileSchema);
+const ProfileModel =
+  mongoose.models.IProfile ||
+  mongoose.model<IProfile>("profiles", ProfileSchema);
 
 export default ProfileModel;
