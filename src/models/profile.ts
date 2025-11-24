@@ -44,6 +44,12 @@ const ProfileSchema: Schema<IProfile> = new Schema<IProfile>(
       type: Boolean,
       default: true,
     },
+  lang: {
+      type: String,
+      required: true,
+        enum: ["urdu","eng"],
+        default:"eng",
+  },
     createdAt: {
       type: Date,
       default: Date.now,

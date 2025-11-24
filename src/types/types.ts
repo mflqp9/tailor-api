@@ -14,6 +14,7 @@ import { Document } from "mongoose";
   city:string;
   isVerified:boolean;
   isActive:boolean;
+  lang:string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +37,7 @@ interface ILogin extends Document {
   email: string;
   password: string;
   confirmPassword?: string;
+  branchid?:string;
 } 
 
 interface ResponseOptions {
