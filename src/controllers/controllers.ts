@@ -1,9 +1,9 @@
-import { postAddNewUser } from './add-user.js';
-import { postSetNewPassword } from './new-password.js';
-import { postForgotPassword } from './forgot-password.js';
-import { postSignUp } from "./signup.js";
-import { postSignIn } from "./signin.js";
-import { postSignOut } from "./signout.js";
-import { postUserVerified } from './user-verify.js';
+import { AddNewUser } from './add-user.js';
+import { SetNewPassword } from './new-password.js';
+import { ForgotPassword } from './forgot-password.js';
+import { SignUp } from "./signup.js";
+import { SignIn } from "./signin.js";
+import { SignOut } from "./signout.js";
+import { UserProfileVerification } from './user-verify.js';
 
-export { postSignUp, postSignIn, postSignOut, postUserVerified,postForgotPassword,postSetNewPassword,postAddNewUser };
+export { SignUp, SignIn, SignOut, UserProfileVerification,ForgotPassword,SetNewPassword,AddNewUser };

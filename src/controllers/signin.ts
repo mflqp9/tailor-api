@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 
 
 //Post SignIn (verified)
-  export const postSignIn = async (req: Request, res: Response): Promise<void> => {
+  export const SignIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password }:ILogin = req.body;
 
@@ -96,8 +96,11 @@ import jwt from "jsonwebtoken";
         id: user._id,
         email: user.email,
         role: user.role,
+        name: profile.name,
+        phone: profile.phone,
+        city: profile.city,
+        lang: profile.lang,
         branchId: user.branchId,
-        expiry: user.expiry,
       },
       error: null,
     });

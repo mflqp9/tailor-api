@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import { generateOtp } from "../utils/generateOtp.js";
 
 //Post SignUp (verified)
- export const postSignUp = async (req: Request, res: Response): Promise<void> => {
+ export const SignUp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password }: ILogin = req.body;
 

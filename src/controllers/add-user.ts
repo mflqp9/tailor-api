@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 
 
 //Post SignUp (verified)
-  export const postAddNewUser = async (req: Request, res: Response): Promise<void> => {
+  export const AddNewUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password,branchid }:ILogin = req.body;
 

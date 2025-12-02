@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 
 
 // SignOut (verified)
- export const postSignOut = (req: Request, res: Response): void => {
+ export const SignOut = (req: Request, res: Response): void => {
   // JWT logout handled client-side by deleting token
   res.status(StatusCodes.ACCEPTED).json({
     succeed: true,

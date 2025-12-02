@@ -5,7 +5,7 @@ import UserModel from "../models/user.js";
 import { config } from "../config/env.js";
 import bcrypt from "bcryptjs";
 
-  export const postSetNewPassword = async (req: Request, res: Response): Promise<void> => {
+  export const SetNewPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email,password }:ILogin = req.body;
 

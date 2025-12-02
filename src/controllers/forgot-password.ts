@@ -9,7 +9,7 @@ import jwt from "jsonwebtoken";
 
 
 //Post Check Email if exists then send otp (verified)
-  export const postForgotPassword = async (req: Request, res: Response): Promise<void> => {
+  export const ForgotPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body;
 
@@ -44,7 +44,7 @@ import jwt from "jsonwebtoken";
         succeed: false,
         message: "Operation Fail",
         data: null,
-        error: "Requestd user is inactive,please contact support to activation.",
+        error: "Requested user is inactive,please contact support to activation.",
       });
       return;
     }

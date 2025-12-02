@@ -1,23 +1,24 @@
 import express from "express";
 import {
-  postSignUp,
-  postSignIn,
-  postSignOut,
-  postUserVerified,
-  postForgotPassword,
-  postSetNewPassword,
-  postAddNewUser
+  SignUp,
+  SignIn,
+  SignOut,
+  UserProfileVerification,
+  ForgotPassword,
+  SetNewPassword,
+  AddNewUser
 } from "../../controllers/controllers.js";
+import UserAuth from "../../middleware/userAuth.js";
 
 const router = express.Router();
 
-router.post("/signup", postSignUp);
-router.post("/verify", postUserVerified);
-router.post("/signin", postSignIn);
-router.post("/signout", postSignOut);
-router.post("/forgot-password",postForgotPassword);
-router.post("/set-password",postSetNewPassword);
-router.post("/add-user",postAddNewUser);
+router.post("/signup", SignUp);
+router.post("/verify",UserAuth, UserProfileVerification);
+router.post("/signin", SignIn);
+router.post("/signout", SignOut);
+router.post("/forgot-password",ForgotPassword);
+router.post("/set-password",SetNewPassword);
+router.post("/add-user",UserAuth, AddNewUser);
 
 
 export default router;

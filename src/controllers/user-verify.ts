@@ -3,7 +3,7 @@ import ProfileModel from "../models/profile.js";
 
 //Verified Controller (verified)
 
-export const postUserVerified = async (req: Request, res: Response) => {
+export const UserProfileVerification = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
