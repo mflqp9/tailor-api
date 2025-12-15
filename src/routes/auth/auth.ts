@@ -13,7 +13,7 @@ import UserAuth from "../../middleware/userAuth.js";
 const router = express.Router();
 
 router.post("/signup", SignUp);
-router.post("/verify",UserAuth, UserProfileVerification);
+router.post("/verify", UserProfileVerification);
 router.post("/signin", SignIn);
 router.post("/signout", SignOut);
 router.post("/forgot-password",ForgotPassword);

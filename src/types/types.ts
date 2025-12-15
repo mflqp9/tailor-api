@@ -5,6 +5,13 @@ export type ConnectionObject = {
 import { StatusCodes } from "http-status-codes";
 import { Document } from "mongoose";
 
+ interface ICustomer extends Document {
+  name: string;
+  mobile:string;
+  comment:string;
+  date: Date;
+}
+
  interface IProfile extends Document {
   email: string;
   name: string;
@@ -48,4 +55,4 @@ interface ResponseOptions {
   error?: any;
 }
 
-export type {IProfile, IUser, IAuthResponse, ILogin, ResponseOptions };
+export type {IProfile, IUser, IAuthResponse, ILogin, ResponseOptions, ICustomer };
