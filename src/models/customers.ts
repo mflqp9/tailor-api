@@ -7,7 +7,7 @@ const CustomerSchema: Schema<ICustomer> = new Schema<ICustomer>(
     name: {
       type: String,
       required: true,
-      maxlength: 100,
+      maxlength: 50,
       default: "default name",
     },
     mobile: {
@@ -19,7 +19,7 @@ const CustomerSchema: Schema<ICustomer> = new Schema<ICustomer>(
     comment: {
       type: String,
       required: true,
-      maxlength: 200,
+      maxlength: 100,
       default: "default comment",
     },
 
@@ -30,6 +30,11 @@ const CustomerSchema: Schema<ICustomer> = new Schema<ICustomer>(
   },
   { collection: "customers", versionKey: false }
 );
+
+// 🔥 Indexes for fast search
+CustomerSchema.index({ name: 1 });
+CustomerSchema.index({ mobile: 1 });
+CustomerSchema.index({ date: -1 });
 
 const CustomerModel =
   mongoose.models.ICustomer ||

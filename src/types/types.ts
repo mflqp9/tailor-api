@@ -13,9 +13,9 @@ import { Document } from "mongoose";
 }
 
  interface IProfile extends Document {
-  email: string;
   name: string;
-  bname:string;
+  email: string;
+  busname:string;
   phone:string;
   address:string;
   city:string;

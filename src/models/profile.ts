@@ -14,9 +14,14 @@ const ProfileSchema: Schema<IProfile> = new Schema<IProfile>(
     name: {
       type: String,
       required: true,
-      lowercase: true,
-      maxlength: 100,
-      default: "default name",
+      maxlength: 50,
+      default:"def name"
+    },
+    busname: {
+      type: String,
+      required: true,
+      maxlength: 70,
+      default: "def bname",
     },
     phone: {
       type: String,
@@ -27,14 +32,14 @@ const ProfileSchema: Schema<IProfile> = new Schema<IProfile>(
     address: {
       type: String,
       required: true,
-      maxlength: 200,
-      default: "default address",
+      maxlength: 100,
+      default: "def address",
     },
     city: {
       type: String,
       required: true,
-      maxlength: 100,
-      default: "default city",
+      maxlength: 50,
+      default: "def city",
     },
     isVerified: {
       type: Boolean,
@@ -44,12 +49,12 @@ const ProfileSchema: Schema<IProfile> = new Schema<IProfile>(
       type: Boolean,
       default: true,
     },
-  lang: {
+    lang: {
       type: String,
       required: true,
-        enum: ["urdu","eng"],
-        default:"eng",
-  },
+      enum: ["urdu", "eng"],
+      default: "eng",
+    },
     createdAt: {
       type: Date,
       default: Date.now,
