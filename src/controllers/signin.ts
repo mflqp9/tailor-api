@@ -97,6 +97,7 @@ import jwt from "jsonwebtoken";
         email: user.email,
         role: user.role,
         name: profile.name,
+        busname:profile.busname,
         phone: profile.phone,
         city: profile.city,
         lang: profile.lang,
