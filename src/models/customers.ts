@@ -3,7 +3,11 @@ import type { ICustomer } from "../types/types.js";
 
 const CustomerSchema: Schema<ICustomer> = new Schema<ICustomer>(
   {
-
+    branchid: {
+      type: String,
+      required: true,
+      maxlength: 50,
+    },
     name: {
       type: String,
       required: true,

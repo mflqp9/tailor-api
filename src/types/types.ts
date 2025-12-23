@@ -6,6 +6,7 @@ import { StatusCodes } from "http-status-codes";
 import { Document } from "mongoose";
 
  interface ICustomer extends Document {
+  branchid:string;
   name: string;
   mobile:string;
   comment:string;
