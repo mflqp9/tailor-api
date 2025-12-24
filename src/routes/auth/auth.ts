@@ -8,7 +8,7 @@ import {
   SetNewPassword,
   AddNewUser
 } from "../../controllers/controllers.js";
-import UserAuth from "../../middleware/userAuth.js";
+import { UserAuth} from "../../middleware/userAuth.js";
 
 const router = express.Router();
 
