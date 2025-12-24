@@ -3,13 +3,11 @@ import { StatusCodes } from "http-status-codes";
 import CustomerModel from "../models/customers.js";
 import { redis } from "../lib/redis.js";
 import { AuthRequest } from "../middleware/userAuth.js";
-import mongoose from "mongoose";
 
 export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
   try {
-    console.log("USER:", req.user);
     const role = req.user!.role.toLowerCase();
-    const branchId = req.user!.branchId;
+    const userBranchId = req.user!.branchId;
     const branches = req.user!.branches;
 
     const search = (req.query.search as string) || "";
@@ -17,25 +15,20 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
     const limit = Number(req.query.limit || 10);
     const skip = (page - 1) * limit;
 
-    // 🔐 ROLE BASED BRANCH FILTER
-    let branchFilter: any = {};
+    let query: any = {};
 
     if (role === "user") {
-      branchFilter.branchId = branchId;new mongoose.Types.ObjectId(branchId); // single branch
+      query.branchid = userBranchId;
+    } else if (role === "admin") {
+      if (!branches?.length) {
+        return res.status(403).json({
+          succeed: false,
+          message: "No branches assigned to admin",
+        });
+      }
+      query.branchid = { $in: branches };
     }
-
- if (role === "admin") {
-  if (!branches?.length) {
-    return res.status(403).json({ message: "No branches assigned" });
-  }
-  branchFilter.branchId = { $in: branches.map((id)=> new mongoose.Types.ObjectId(id)) };
-}
-
-    if (role === "super_admin") {
-      branchFilter = {}; // no restriction
-    }
-
-    const query: any = { ...branchFilter };
+    // super_admin → no branch restriction
 
     if (search) {
       query.$or = [
@@ -44,26 +37,14 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
       ];
     }
 
-    const cacheKey = `customers:${role}:${JSON.stringify(
-      branchFilter
-    )}:${search}:${page}:${limit}`;
+    const CACHE_VERSION = "v2";
+    const cacheKey = `customers:${CACHE_VERSION}:${role}:${page}:${limit}:${JSON.stringify(query)}`;
 
-    // 🔴 Redis cache
     const cached = await redis.get(cacheKey);
-    if (cached) {
-      return res.json(JSON.parse(cached));
-    }
-
+    if (cached) return res.json(JSON.parse(cached));
 
     const [data, total] = await Promise.all([
-      CustomerModel.find(query, {
-        _id: 1,
-        name: 1,
-        mobile: 1,
-        comment: 1,
-        date: 1,
-        branchId: 1,
-      })
+      CustomerModel.find(query)
         .sort({ date: -1 })
         .skip(skip)
         .limit(limit),
@@ -82,9 +63,7 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
       error: null,
     };
 
-    // 🟢 Cache 30s
     await redis.setex(cacheKey, 30, JSON.stringify(response));
-
     res.json(response);
   } catch (err) {
     console.error(err);
@@ -95,3 +74,4 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
     });
   }
 };
+
