@@ -83,7 +83,7 @@ import jwt from "jsonwebtoken";
 
     // Create JWT
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id,branchid:user.branchid, email: user.email, role: user.role },
       config.JWT.secret,
       { expiresIn: "1d" }
     );
