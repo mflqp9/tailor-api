@@ -3,10 +3,14 @@ import { StatusCodes } from "http-status-codes";
 import CustomerModel from "../models/customers.js";
 import { redis } from "../lib/redis.js";
 import { AuthRequest } from "../middleware/userAuth.js";
+import mongoose from "mongoose";
 
 export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
   try {
-    const { role, branchId, branches } = req.user!;
+    console.log("USER:", req.user);
+    const role = req.user!.role.toLowerCase();
+    const branchId = req.user!.branchId;
+    const branches = req.user!.branches;
 
     const search = (req.query.search as string) || "";
     const page = Number(req.query.page || 1);
@@ -17,12 +21,15 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
     let branchFilter: any = {};
 
     if (role === "user") {
-      branchFilter.branchId = branchId; // single branch
+      branchFilter.branchId = branchId;new mongoose.Types.ObjectId(branchId); // single branch
     }
 
-    if (role === "admin") {
-      branchFilter.branchId = { $in: branches }; // multi-branch
-    }
+ if (role === "admin") {
+  if (!branches?.length) {
+    return res.status(403).json({ message: "No branches assigned" });
+  }
+  branchFilter.branchId = { $in: branches.map((id)=> new mongoose.Types.ObjectId(id)) };
+}
 
     if (role === "super_admin") {
       branchFilter = {}; // no restriction
@@ -47,11 +54,16 @@ export const getCustomersDetail = async (req: AuthRequest, res: Response) => {
       return res.json(JSON.parse(cached));
     }
 
+
     const [data, total] = await Promise.all([
-      CustomerModel.find(
-        query,
-        { _id: 1, name: 1, mobile: 1, comment: 1, date: 1, branchId: 1 }
-      )
+      CustomerModel.find(query, {
+        _id: 1,
+        name: 1,
+        mobile: 1,
+        comment: 1,
+        date: 1,
+        branchId: 1,
+      })
         .sort({ date: -1 })
         .skip(skip)
         .limit(limit),
